@@ -1,0 +1,1560 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataTech Innovations - Predicción de Demanda</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px 0;
+            margin-bottom: 30px;
+        }
+        
+        header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 30px;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .panel {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .panel-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        button {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.3s;
+            margin-top: 5px;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+        
+        button.primary {
+            background-color: var(--primary-color);
+        }
+        
+        button.primary:hover {
+            background-color: #1a2530;
+        }
+        
+        button.accent {
+            background-color: var(--accent-color);
+        }
+        
+        button.accent:hover {
+            background-color: #c0392b;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+        }
+        
+        .tab.active {
+            border-bottom: 2px solid var(--secondary-color);
+            color: var(--secondary-color);
+            font-weight: 500;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-bottom: 20px;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .data-table th, .data-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .data-table th {
+            background-color: #f5f5f5;
+            font-weight: 500;
+        }
+        
+        .data-info {
+            background-color: var(--light-color);
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        
+        .data-info p {
+            margin-bottom: 5px;
+        }
+        
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .metric-card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        
+        .metric-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--secondary-color);
+            margin: 10px 0;
+        }
+        
+        .metric-label {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .status {
+            background-color: var(--light-color);
+            padding: 10px;
+            text-align: center;
+            border-radius: 4px;
+            margin-top: 20px;
+            font-weight: 500;
+        }
+        
+        .radio-group {
+            margin-bottom: 15px;
+        }
+        
+        .radio-option {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .radio-option input {
+            width: auto;
+            margin-right: 10px;
+        }
+        
+        .slider-container {
+            margin: 15px 0;
+        }
+        
+        .slider-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .loading-spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid var(--secondary-color);
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">DataTech Innovations</div>
+            <div>Sistema de Predicción de Demanda</div>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="main-content">
+            <!-- Panel de Control -->
+            <div class="control-panel">
+                <!-- Panel de Datos -->
+                <div class="panel">
+                    <h2 class="panel-title">Datos</h2>
+                    <button id="generateDataBtn">Generar Datos Simulados</button>
+                    <div class="form-group">
+                        <label for="csvFile">Cargar CSV:</label>
+                        <input type="file" id="csvFile" accept=".csv">
+                    </div>
+                    <div id="dataInfo" class="data-info" style="display: none;">
+                        <p><strong>Registros:</strong> <span id="recordCount">0</span></p>
+                        <p><strong>Período:</strong> <span id="datePeriod">-</span></p>
+                        <p><strong>Productos:</strong> <span id="productCount">0</span></p>
+                        <p><strong>Tiendas:</strong> <span id="storeCount">0</span></p>
+                    </div>
+                </div>
+                
+                <!-- Panel de Modelo -->
+                <div class="panel">
+                    <h2 class="panel-title">Configuración del Modelo</h2>
+                    <div class="radio-group">
+                        <label>Tipo de Modelo:</label>
+                        <div class="radio-option">
+                            <input type="radio" id="modelHybrid" name="modelType" value="hybrid" checked>
+                            <label for="modelHybrid">Híbrido (Tendencia + Estacional)</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="modelLinear" name="modelType" value="linear">
+                            <label for="modelLinear">Regresión Lineal</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="modelSeasonal" name="modelType" value="seasonal">
+                            <label for="modelSeasonal">Estacional</label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="testSize">Tamaño del conjunto de prueba:</label>
+                        <input type="range" id="testSize" min="0.1" max="0.5" step="0.05" value="0.2">
+                        <div class="slider-labels">
+                            <span>10%</span>
+                            <span id="testSizeValue">20%</span>
+                            <span>50%</span>
+                        </div>
+                    </div>
+                    
+                    <button id="trainModelBtn" class="primary">Entrenar Modelo</button>
+                </div>
+                
+                <!-- Panel de Predicción -->
+                <div class="panel">
+                    <h2 class="panel-title">Predicción</h2>
+                    <div class="form-group">
+                        <label for="productSelect">Producto:</label>
+                        <select id="productSelect">
+                            <option value="">Seleccione un producto</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="storeSelect">Tienda:</label>
+                        <select id="storeSelect">
+                            <option value="">Seleccione una tienda</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="daysToPredict">Días a predecir:</label>
+                        <input type="range" id="daysToPredict" min="7" max="90" step="1" value="30">
+                        <div class="slider-labels">
+                            <span>7</span>
+                            <span id="daysValue">30</span>
+                            <span>90</span>
+                        </div>
+                    </div>
+                    
+                    <button id="predictBtn" class="accent">Generar Predicción</button>
+                </div>
+            </div>
+            
+            <!-- Panel de Visualización -->
+            <div class="visualization-panel">
+                <div class="panel">
+                    <div class="tabs">
+                        <div class="tab active" data-tab="data">Datos</div>
+                        <div class="tab" data-tab="evaluation">Evaluación</div>
+                        <div class="tab" data-tab="prediction">Predicción</div>
+                        <div class="tab" data-tab="analysis">Análisis</div>
+                    </div>
+                    
+                    <!-- Contenido de Pestañas -->
+                    <div id="dataTab" class="tab-content active">
+                        <div class="chart-container">
+                            <canvas id="dataChart"></canvas>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="productChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div id="evaluationTab" class="tab-content">
+                        <div class="metrics">
+                            <div class="metric-card">
+                                <div class="metric-label">MSE</div>
+                                <div id="mseValue" class="metric-value">-</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-label">RMSE</div>
+                                <div id="rmseValue" class="metric-value">-</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-label">MAPE</div>
+                                <div id="mapeValue" class="metric-value">-</div>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="evaluationChart"></canvas>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="errorChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div id="predictionTab" class="tab-content">
+                        <div class="chart-container">
+                            <canvas id="predictionChart"></canvas>
+                        </div>
+                        <table class="data-table" id="predictionTable">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Predicción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Datos de predicción -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div id="analysisTab" class="tab-content">
+                        <div class="metrics">
+                            <div class="metric-card">
+                                <div class="metric-label">Demanda Total</div>
+                                <div id="totalDemand" class="metric-value">-</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-label">Promedio Diario</div>
+                                <div id="avgDemand" class="metric-value">-</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-label">Tendencia</div>
+                                <div id="trendValue" class="metric-value">-</div>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="weekdayChart"></canvas>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="trendChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="loading" class="loading">
+                    <div class="loading-spinner"></div>
+                    <p>Procesando datos...</p>
+                </div>
+                
+                <div id="status" class="status">
+                    Listo para comenzar
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Variables globales
+        let salesData = null;
+        let model = null;
+        let predictions = null;
+        let charts = {};
+        
+        // Elementos DOM
+        const dataInfo = document.getElementById('dataInfo');
+        const recordCount = document.getElementById('recordCount');
+        const datePeriod = document.getElementById('datePeriod');
+        const productCount = document.getElementById('productCount');
+        const storeCount = document.getElementById('storeCount');
+        const productSelect = document.getElementById('productSelect');
+        const storeSelect = document.getElementById('storeSelect');
+        const testSizeValue = document.getElementById('testSizeValue');
+        const daysValue = document.getElementById('daysValue');
+        const mseValue = document.getElementById('mseValue');
+        const rmseValue = document.getElementById('rmseValue');
+        const mapeValue = document.getElementById('mapeValue');
+        const totalDemand = document.getElementById('totalDemand');
+        const avgDemand = document.getElementById('avgDemand');
+        const trendValue = document.getElementById('trendValue');
+        const predictionTable = document.getElementById('predictionTable').querySelector('tbody');
+        const status = document.getElementById('status');
+        const loading = document.getElementById('loading');
+        
+        // Event Listeners
+        document.getElementById('generateDataBtn').addEventListener('click', generateData);
+        document.getElementById('csvFile').addEventListener('change', loadCSV);
+        document.getElementById('trainModelBtn').addEventListener('click', trainModel);
+        document.getElementById('predictBtn').addEventListener('click', predict);
+        document.getElementById('testSize').addEventListener('input', updateTestSizeValue);
+        document.getElementById('daysToPredict').addEventListener('input', updateDaysValue);
+        
+        // Tabs
+        const tabs = document.querySelectorAll('.tab');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Desactivar todas las pestañas
+                tabs.forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                
+                // Activar pestaña seleccionada
+                tab.classList.add('active');
+                const tabId = tab.getAttribute('data-tab');
+                document.getElementById(`${tabId}Tab`).classList.add('active');
+            });
+        });
+        
+        // Funciones de actualización de UI
+        function updateTestSizeValue() {
+            const value = document.getElementById('testSize').value;
+            testSizeValue.textContent = `${Math.round(value * 100)}%`;
+        }
+        
+        function updateDaysValue() {
+            const value = document.getElementById('daysToPredict').value;
+            daysValue.textContent = value;
+        }
+        
+        // Inicializar valores
+        updateTestSizeValue();
+        updateDaysValue();
+        
+        // Función para generar datos simulados
+        function generateData() {
+            showLoading('Generando datos simulados...');
+            
+            setTimeout(() => {
+                try {
+                    // Parámetros para la generación de datos
+                    const startDate = new Date(2022, 0, 1);
+                    const endDate = new Date(2023, 11, 31);
+                    const products = ['Leche', 'Pan', 'Huevos', 'Arroz', 'Pasta', 'Aceite', 'Azúcar', 'Café'];
+                    const stores = ['Tienda 1', 'Tienda 2', 'Tienda 3', 'Tienda 4', 'Tienda 5'];
+                    
+                    // Crear rango de fechas
+                    const dateRange = [];
+                    const currentDate = new Date(startDate);
+                    while (currentDate <= endDate) {
+                        dateRange.push(new Date(currentDate));
+                        currentDate.setDate(currentDate.getDate() + 1);
+                    }
+                    
+                    // Generar datos
+                    salesData = [];
+                    
+                    for (const product of products) {
+                        for (const store of stores) {
+                            // Base de ventas para este producto/tienda
+                            const baseSales = Math.floor(Math.random() * 150) + 50;
+                            
+                            // Tendencia (crecimiento anual)
+                            const trendFactor = Math.random() * 0.002 + 0.001;
+                            
+                            for (let i = 0; i < dateRange.length; i++) {
+                                const date = dateRange[i];
+                                
+                                // Calcular ventas base con tendencia
+                                let sale = baseSales * (1 + trendFactor * i);
+                                
+                                // Añadir estacionalidad semanal
+                                const weekday = date.getDay();
+                                if (weekday === 5) { // Sábado
+                                    sale *= 1.4;
+                                } else if (weekday === 6) { // Domingo
+                                    sale *= 1.2;
+                                } else if (weekday === 0) { // Lunes
+                                    sale *= 0.8;
+                                }
+                                
+                                // Añadir estacionalidad mensual
+                                if (date.getDate() <= 5) { // Principio de mes
+                                    sale *= 1.25;
+                                } else if (date.getDate() >= 25) { // Final de mes
+                                    sale *= 0.9;
+                                }
+                                
+                                // Añadir estacionalidad anual
+                                const month = date.getMonth();
+                                if (month === 10 || month === 11) { // Temporada navideña
+                                    sale *= 1.3;
+                                } else if (month >= 5 && month <= 7) { // Verano
+                                    if (product === 'Helado' || product === 'Bebidas') {
+                                        sale *= 1.4;
+                                    } else {
+                                        sale *= 0.9;
+                                    }
+                                }
+                                
+                                // Añadir ruido aleatorio
+                                const noise = 0.9 + Math.random() * 0.2;
+                                sale *= noise;
+                                
+                                // Redondear y añadir a la lista
+                                salesData.push({
+                                    date: new Date(date),
+                                    product: product,
+                                    store: store,
+                                    sales: Math.round(sale)
+                                });
+                            }
+                        }
+                    }
+                    
+                    updateDataInfo();
+                    visualizeData();
+                    updateStatus('Datos simulados generados correctamente');
+                } catch (error) {
+                    console.error('Error al generar datos:', error);
+                    updateStatus('Error al generar datos simulados', true);
+                } finally {
+                    hideLoading();
+                }
+            }, 1000);
+        }
+        
+        // Función para cargar datos desde CSV
+        function loadCSV(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            showLoading('Cargando archivo CSV...');
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const contents = e.target.result;
+                    const lines = contents.split('\n');
+                    const headers = lines[0].split(',');
+                    
+                    // Verificar columnas requeridas
+                    const dateIndex = headers.indexOf('fecha');
+                    const productIndex = headers.indexOf('producto');
+                    const storeIndex = headers.indexOf('tienda');
+                    const salesIndex = headers.indexOf('ventas');
+                    
+                    if (dateIndex === -1 || productIndex === -1 || storeIndex === -1 || salesIndex === -1) {
+                        throw new Error('El archivo CSV debe contener las columnas: fecha, producto, tienda, ventas');
+                    }
+                    
+                    // Parsear datos
+                    salesData = [];
+                    for (let i = 1; i < lines.length; i++) {
+                        if (!lines[i].trim()) continue;
+                        
+                        const values = lines[i].split(',');
+                        salesData.push({
+                            date: new Date(values[dateIndex]),
+                            product: values[productIndex],
+                            store: values[storeIndex],
+                            sales: parseInt(values[salesIndex])
+                        });
+                    }
+                    
+                    updateDataInfo();
+                    visualizeData();
+                    updateStatus('Datos CSV cargados correctamente');
+                } catch (error) {
+                    console.error('Error al cargar CSV:', error);
+                    updateStatus('Error al cargar el archivo CSV: ' + error.message, true);
+                } finally {
+                    hideLoading();
+                }
+            };
+            reader.readAsText(file);
+        }
+        
+        // Función para actualizar información del dataset
+        function updateDataInfo() {
+            if (!salesData || salesData.length === 0) {
+                dataInfo.style.display = 'none';
+                return;
+            }
+            
+            // Obtener información del dataset
+            const dates = salesData.map(d => d.date);
+            const minDate = new Date(Math.min(...dates));
+            const maxDate = new Date(Math.max(...dates));
+            
+            const products = [...new Set(salesData.map(d => d.product))];
+            const stores = [...new Set(salesData.map(d => d.store))];
+            
+            // Actualizar UI
+            recordCount.textContent = salesData.length;
+            datePeriod.textContent = `${formatDate(minDate)} - ${formatDate(maxDate)}`;
+            productCount.textContent = products.length;
+            storeCount.textContent = stores.length;
+            
+            dataInfo.style.display = 'block';
+            
+            // Actualizar selectores de producto y tienda
+            updateSelectors(products, stores);
+        }
+        
+        // Función para actualizar selectores de producto y tienda
+        function updateSelectors(products, stores) {
+            // Limpiar selectores
+            productSelect.innerHTML = '<option value="">Seleccione un producto</option>';
+            storeSelect.innerHTML = '<option value="">Seleccione una tienda</option>';
+            
+            // Añadir opciones
+            products.sort().forEach(product => {
+                const option = document.createElement('option');
+                option.value = product;
+                option.textContent = product;
+                productSelect.appendChild(option);
+            });
+            
+            stores.sort().forEach(store => {
+                const option = document.createElement('option');
+                option.value = store;
+                option.textContent = store;
+                storeSelect.appendChild(option);
+            });
+            
+            // Seleccionar primeras opciones
+            if (products.length > 0) {
+                productSelect.value = products[0];
+            }
+            
+            if (stores.length > 0) {
+                storeSelect.value = stores[0];
+            }
+        }
+        
+        // Función para visualizar datos
+        function visualizeData() {
+            if (!salesData || salesData.length === 0) return;
+            
+            // Agrupar datos por fecha
+            const dailySales = {};
+            salesData.forEach(d => {
+                const dateStr = formatDate(d.date);
+                if (!dailySales[dateStr]) {
+                    dailySales[dateStr] = 0;
+                }
+                dailySales[dateStr] += d.sales;
+            });
+            
+            // Agrupar datos por producto
+            const productSales = {};
+            salesData.forEach(d => {
+                if (!productSales[d.product]) {
+                    productSales[d.product] = 0;
+                }
+                productSales[d.product] += d.sales;
+            });
+            
+            // Preparar datos para gráficos
+            const dates = Object.keys(dailySales).sort();
+            const salesValues = dates.map(date => dailySales[date]);
+            
+            const products = Object.keys(productSales).sort((a, b) => 
+                productSales[b] - productSales[a]
+            );
+            const productValues = products.map(product => productSales[product]);
+            
+            // Crear gráfico de ventas diarias
+            if (charts.dataChart) {
+                charts.dataChart.destroy();
+            }
+            
+            const dataCtx = document.getElementById('dataChart').getContext('2d');
+            charts.dataChart = new Chart(dataCtx, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: 'Ventas Totales por Día',
+                        data: salesValues,
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.1,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Ventas Totales por Día'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Ventas'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Fecha'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Crear gráfico de ventas por producto
+            if (charts.productChart) {
+                charts.productChart.destroy();
+            }
+            
+            const productCtx = document.getElementById('productChart').getContext('2d');
+            charts.productChart = new Chart(productCtx, {
+                type: 'bar',
+                data: {
+                    labels: products,
+                    datasets: [{
+                        label: 'Ventas Totales por Producto',
+                        data: productValues,
+                        backgroundColor: 'rgba(46, 204, 113, 0.7)',
+                        borderColor: 'rgba(46, 204, 113, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Ventas Totales por Producto'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Ventas'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Producto'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Función para entrenar el modelo
+        function trainModel() {
+            if (!salesData || salesData.length === 0) {
+                updateStatus('No hay datos para entrenar el modelo', true);
+                return;
+            }
+            
+            showLoading('Entrenando modelo...');
+            
+            setTimeout(() => {
+                try {
+                    // Obtener parámetros
+                    const modelType = document.querySelector('input[name="modelType"]:checked').value;
+                    const testSize = parseFloat(document.getElementById('testSize').value);
+                    
+                    // Filtrar datos para un producto y tienda específicos
+                    const product = productSelect.value;
+                    const store = storeSelect.value;
+                    
+                    if (!product || !store) {
+                        throw new Error('Debe seleccionar un producto y una tienda');
+                    }
+                    
+                    const filteredData = salesData.filter(d => 
+                        d.product === product && d.store === store
+                    );
+                    
+                    if (filteredData.length === 0) {
+                        throw new Error('No hay datos para el producto y tienda seleccionados');
+                    }
+                    
+                    // Ordenar por fecha
+                    filteredData.sort((a, b) => a.date - b.date);
+                    
+                    // Dividir en conjuntos de entrenamiento y prueba
+                    const splitIndex = Math.floor(filteredData.length * (1 - testSize));
+                    const trainData = filteredData.slice(0, splitIndex);
+                    const testData = filteredData.slice(splitIndex);
+                    
+                    // Entrenar modelo según el tipo
+                    let trainPredictions = [];
+                    let testPredictions = [];
+                    
+                    if (modelType === 'linear') {
+                        // Modelo de regresión lineal simple
+                        const xTrain = trainData.map((_, i) => i);
+                        const yTrain = trainData.map(d => d.sales);
+                        
+                        // Calcular coeficientes
+                        const n = xTrain.length;
+                        let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+                        
+                        for (let i = 0; i < n; i++) {
+                            sumX += xTrain[i];
+                            sumY += yTrain[i];
+                            sumXY += xTrain[i] * yTrain[i];
+                            sumX2 += xTrain[i] * xTrain[i];
+                        }
+                        
+                        const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+                        const intercept = (sumY - slope * sumX) / n;
+                        
+                        // Hacer predicciones en conjunto de entrenamiento
+                        trainPredictions = xTrain.map(x => intercept + slope * x);
+                        
+                        // Hacer predicciones en conjunto de prueba
+                        const xTest = testData.map((_, i) => i + splitIndex);
+                        testPredictions = xTest.map(x => intercept + slope * x);
+                        
+                        // Guardar modelo
+                        model = {
+                            type: 'linear',
+                            slope,
+                            intercept,
+                            product,
+                            store,
+                            lastDate: filteredData[filteredData.length - 1].date,
+                            lastIndex: filteredData.length - 1
+                        };
+                        
+                    } else if (modelType === 'seasonal') {
+                        // Modelo estacional simple
+                        // Calcular factores estacionales por día de la semana
+                        const weekdayFactors = Array(7).fill(0);
+                        const weekdayCounts = Array(7).fill(0);
+                        
+                        trainData.forEach(d => {
+                            const weekday = d.date.getDay();
+                            weekdayFactors[weekday] += d.sales;
+                            weekdayCounts[weekday]++;
+                        });
+                        
+                        for (let i = 0; i < 7; i++) {
+                            if (weekdayCounts[i] > 0) {
+                                weekdayFactors[i] /= weekdayCounts[i];
+                            }
+                        }
+                        
+                        // Normalizar factores
+                        const avgSales = trainData.reduce((sum, d) => sum + d.sales, 0) / trainData.length;
+                        for (let i = 0; i < 7; i++) {
+                            weekdayFactors[i] /= avgSales;
+                        }
+                        
+                        // Hacer predicciones en conjunto de entrenamiento
+                        trainPredictions = trainData.map(d => {
+                            const weekday = d.date.getDay();
+                            return avgSales * weekdayFactors[weekday];
+                        });
+                        
+                        // Hacer predicciones en conjunto de prueba
+                        testPredictions = testData.map(d => {
+                            const weekday = d.date.getDay();
+                            return avgSales * weekdayFactors[weekday];
+                        });
+                        
+                        // Guardar modelo
+                        model = {
+                            type: 'seasonal',
+                            weekdayFactors,
+                            avgSales,
+                            product,
+                            store,
+                            lastDate: filteredData[filteredData.length - 1].date
+                        };
+                        
+                    } else if (modelType === 'hybrid') {
+                        // Modelo híbrido (tendencia + estacionalidad)
+                        // 1. Calcular tendencia
+                        const xTrain = trainData.map((_, i) => i);
+                        const yTrain = trainData.map(d => d.sales);
+                        
+                        // Calcular coeficientes
+                        const n = xTrain.length;
+                        let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+                        
+                        for (let i = 0; i < n; i++) {
+                            sumX += xTrain[i];
+                            sumY += yTrain[i];
+                            sumXY += xTrain[i] * yTrain[i];
+                            sumX2 += xTrain[i] * xTrain[i];
+                        }
+                        
+                        const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+                        const intercept = (sumY - slope * sumX) / n;
+                        
+                        // 2. Calcular factores estacionales
+                        const trendValues = xTrain.map(x => intercept + slope * x);
+                        const residuals = yTrain.map((y, i) => y / trendValues[i]);
+                        
+                        // Calcular factores por día de la semana
+                        const weekdayFactors = Array(7).fill(0);
+                        const weekdayCounts = Array(7).fill(0);
+                        
+                        trainData.forEach((d, i) => {
+                            const weekday = d.date.getDay();
+                            weekdayFactors[weekday] += residuals[i];
+                            weekdayCounts[weekday]++;
+                        });
+                        
+                        for (let i = 0; i < 7; i++) {
+                            if (weekdayCounts[i] > 0) {
+                                weekdayFactors[i] /= weekdayCounts[i];
+                            } else {
+                                weekdayFactors[i] = 1; // Valor por defecto
+                            }
+                        }
+                        
+                        // 3. Hacer predicciones en conjunto de entrenamiento
+                        trainPredictions = trainData.map((d, i) => {
+                            const trend = intercept + slope * i;
+                            const weekday = d.date.getDay();
+                            return trend * weekdayFactors[weekday];
+                        });
+                        
+                        // 4. Hacer predicciones en conjunto de prueba
+                        testPredictions = testData.map((d, i) => {
+                            const trend = intercept + slope * (i + splitIndex);
+                            const weekday = d.date.getDay();
+                            return trend * weekdayFactors[weekday];
+                        });
+                        
+                        // Guardar modelo
+                        model = {
+                            type: 'hybrid',
+                            slope,
+                            intercept,
+                            weekdayFactors,
+                            product,
+                            store,
+                            lastDate: filteredData[filteredData.length - 1].date,
+                            lastIndex: filteredData.length - 1
+                        };
+                    }
+                    
+                    // Calcular métricas
+                    const testActual = testData.map(d => d.sales);
+                    const mse = calculateMSE(testActual, testPredictions);
+                    const rmse = Math.sqrt(mse);
+                    const mape = calculateMAPE(testActual, testPredictions);
+                    
+                    // Actualizar UI
+                    mseValue.textContent = mse.toFixed(2);
+                    rmseValue.textContent = rmse.toFixed(2);
+                    mapeValue.textContent = mape.toFixed(2) + '%';
+                    
+                    // Visualizar evaluación
+                    visualizeEvaluation(testData, testPredictions);
+                    
+                    // Cambiar a pestaña de evaluación
+                    document.querySelector('.tab[data-tab="evaluation"]').click();
+                    
+                    updateStatus(`Modelo ${modelType} entrenado correctamente - RMSE: ${rmse.toFixed(2)}, MAPE: ${mape.toFixed(2)}%`);
+                } catch (error) {
+                    console.error('Error al entrenar modelo:', error);
+                    updateStatus('Error al entrenar el modelo: ' + error.message, true);
+                } finally {
+                    hideLoading();
+                }
+            }, 1500);
+        }
+        
+        // Función para visualizar evaluación
+        function visualizeEvaluation(testData, predictions) {
+            // Preparar datos
+            const dates = testData.map(d => formatDate(d.date));
+            const actual = testData.map(d => d.sales);
+            
+            // Crear gráfico de predicciones vs valores reales
+            if (charts.evaluationChart) {
+                charts.evaluationChart.destroy();
+            }
+            
+            const evalCtx = document.getElementById('evaluationChart').getContext('2d');
+            charts.evaluationChart = new Chart(evalCtx, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [
+                        {
+                            label: 'Valores Reales',
+                            data: actual,
+                            borderColor: '#3498db',
+                            backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.1,
+                            fill: false
+                        },
+                        {
+                            label: 'Predicciones',
+                            data: predictions,
+                            borderColor: '#e74c3c',
+                            backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.1,
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Predicciones vs Valores Reales'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Ventas'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Fecha'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Crear gráfico de errores
+            if (charts.errorChart) {
+                charts.errorChart.destroy();
+            }
+            
+            const errors = actual.map((a, i) => a - predictions[i]);
+            
+            const errorCtx = document.getElementById('errorChart').getContext('2d');
+            charts.errorChart = new Chart(errorCtx, {
+                type: 'bar',
+                data: {
+                    labels: dates,
+                    datasets: [
+                        {
+                            label: 'Error (Real - Predicción)',
+                            data: errors,
+                            backgroundColor: errors.map(e => e >= 0 ? 'rgba(46, 204, 113, 0.7)' : 'rgba(231, 76, 60, 0.7)'),
+                            borderColor: errors.map(e => e >= 0 ? 'rgba(46, 204, 113, 1)' : 'rgba(231, 76, 60, 1)'),
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Errores de Predicción'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Error'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Fecha'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Función para generar predicciones
+        function predict() {
+            if (!model) {
+                updateStatus('No hay modelo entrenado para realizar predicciones', true);
+                return;
+            }
+            
+            showLoading('Generando predicciones...');
+            
+            setTimeout(() => {
+                try {
+                    // Obtener parámetros
+                    const product = productSelect.value;
+                    const store = storeSelect.value;
+                    const days = parseInt(document.getElementById('daysToPredict').value);
+                    
+                    // Verificar que el producto y tienda coincidan con los del modelo
+                    if (product !== model.product || store !== model.store) {
+                        throw new Error(`El modelo fue entrenado para ${model.product} en ${model.store}. Las predicciones pueden no ser precisas para ${product} en ${store}.`);
+                    }
+                    
+                    // Generar fechas futuras
+                    const lastDate = new Date(model.lastDate);
+                    const futureDates = [];
+                    
+                    for (let i = 1; i <= days; i++) {
+                        const date = new Date(lastDate);
+                        date.setDate(lastDate.getDate() + i);
+                        futureDates.push(date);
+                    }
+                    
+                    // Generar predicciones según el tipo de modelo
+                    let predictionValues = [];
+                    
+                    if (model.type === 'linear') {
+                        // Modelo lineal
+                        predictionValues = futureDates.map((_, i) => {
+                            const index = model.lastIndex + i + 1;
+                            return model.intercept + model.slope * index;
+                        });
+                    } else if (model.type === 'seasonal') {
+                        // Modelo estacional
+                        predictionValues = futureDates.map(date => {
+                            const weekday = date.getDay();
+                            return model.avgSales * model.weekdayFactors[weekday];
+                        });
+                    } else if (model.type === 'hybrid') {
+                        // Modelo híbrido
+                        predictionValues = futureDates.map((date, i) => {
+                            const index = model.lastIndex + i + 1;
+                            const trend = model.intercept + model.slope * index;
+                            const weekday = date.getDay();
+                            return trend * model.weekdayFactors[weekday];
+                        });
+                    }
+                    
+                    // Asegurar que las predicciones sean positivas
+                    predictionValues = predictionValues.map(p => Math.max(0, p));
+                    
+                    // Crear objeto de predicciones
+                    predictions = futureDates.map((date, i) => ({
+                        date,
+                        prediction: Math.round(predictionValues[i])
+                    }));
+                    
+                    // Visualizar predicciones
+                    visualizePredictions();
+                    
+                    // Visualizar análisis
+                    visualizeAnalysis();
+                    
+                    // Cambiar a pestaña de predicción
+                    document.querySelector('.tab[data-tab="prediction"]').click();
+                    
+                    updateStatus(`Predicciones generadas para ${product} en ${store} (${days} días)`);
+                } catch (error) {
+                    console.error('Error al generar predicciones:', error);
+                    updateStatus('Error al generar predicciones: ' + error.message, true);
+                } finally {
+                    hideLoading();
+                }
+            }, 1000);
+        }
+        
+        // Función para visualizar predicciones
+        function visualizePredictions() {
+            if (!predictions || predictions.length === 0) return;
+            
+            // Preparar datos
+            const dates = predictions.map(p => formatDate(p.date));
+            const values = predictions.map(p => p.prediction);
+            
+            // Crear gráfico de predicciones
+            if (charts.predictionChart) {
+                charts.predictionChart.destroy();
+            }
+            
+            const predCtx = document.getElementById('predictionChart').getContext('2d');
+            charts.predictionChart = new Chart(predCtx, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [
+                        {
+                            label: 'Predicción de Demanda',
+                            data: values,
+                            borderColor: '#e74c3c',
+                            backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.1,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: `Predicción de Demanda: ${model.product} en ${model.store}`
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Unidades'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Fecha'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Actualizar tabla de predicciones
+            predictionTable.innerHTML = '';
+            predictions.forEach(p => {
+                const row = document.createElement('tr');
+                
+                const dateCell = document.createElement('td');
+                dateCell.textContent = formatDate(p.date);
+                row.appendChild(dateCell);
+                
+                const predictionCell = document.createElement('td');
+                predictionCell.textContent = p.prediction;
+                row.appendChild(predictionCell);
+                
+                predictionTable.appendChild(row);
+            });
+        }
+        
+        // Función para visualizar análisis
+        function visualizeAnalysis() {
+            if (!predictions || predictions.length === 0) return;
+            
+            // Calcular métricas
+            const totalDemandValue = predictions.reduce((sum, p) => sum + p.prediction, 0);
+            const avgDemandValue = totalDemandValue / predictions.length;
+            
+            // Calcular tendencia
+            const x = predictions.map((_, i) => i);
+            const y = predictions.map(p => p.prediction);
+            
+            const n = x.length;
+            let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+            
+            for (let i = 0; i < n; i++) {
+                sumX += x[i];
+                sumY += y[i];
+                sumXY += x[i] * y[i];
+                sumX2 += x[i] * x[i];
+            }
+            
+            const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+            const trendText = slope > 0 ? 'Creciente' : slope < 0 ? 'Decreciente' : 'Estable';
+            
+            // Actualizar UI
+            totalDemand.textContent = Math.round(totalDemandValue);
+            avgDemand.textContent = Math.round(avgDemandValue);
+            trendValue.textContent = trendText;
+            
+            // Análisis por día de la semana
+            const weekdaySales = Array(7).fill(0);
+            const weekdayCounts = Array(7).fill(0);
+            
+            predictions.forEach(p => {
+                const weekday = p.date.getDay();
+                weekdaySales[weekday] += p.prediction;
+                weekdayCounts[weekday]++;
+            });
+            
+            for (let i = 0; i < 7; i++) {
+                if (weekdayCounts[i] > 0) {
+                    weekdaySales[i] /= weekdayCounts[i];
+                }
+            }
+            
+            // Crear gráfico por día de la semana
+            if (charts.weekdayChart) {
+                charts.weekdayChart.destroy();
+            }
+            
+            const weekdays = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+            
+            const weekdayCtx = document.getElementById('weekdayChart').getContext('2d');
+            charts.weekdayChart = new Chart(weekdayCtx, {
+                type: 'bar',
+                data: {
+                    labels: weekdays,
+                    datasets: [
+                        {
+                            label: 'Demanda Promedio por Día de la Semana',
+                            data: weekdaySales,
+                            backgroundColor: 'rgba(52, 152, 219, 0.7)',
+                            borderColor: 'rgba(52, 152, 219, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Demanda Promedio por Día de la Semana'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Demanda Promedio'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Día de la Semana'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Crear gráfico de tendencia
+            if (charts.trendChart) {
+                charts.trendChart.destroy();
+            }
+            
+            const dates = predictions.map(p => formatDate(p.date));
+            const values = predictions.map(p => p.prediction);
+            const trendValues = x.map(x => (sumY / n) + slope * (x - sumX / n));
+            
+            const trendCtx = document.getElementById('trendChart').getContext('2d');
+            charts.trendChart = new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [
+                        {
+                            label: 'Predicción',
+                            data: values,
+                            borderColor: '#e74c3c',
+                            backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.1,
+                            fill: false
+                        },
+                        {
+                            label: 'Tendencia',
+                            data: trendValues,
+                            borderColor: '#2c3e50',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            tension: 0,
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Tendencia de la Demanda'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Demanda'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Fecha'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Funciones auxiliares
+        function formatDate(date) {
+            return date.toISOString().split('T')[0];
+        }
+        
+        function calculateMSE(actual, predicted) {
+            let sumSquaredError = 0;
+            const n = Math.min(actual.length, predicted.length);
+            
+            for (let i = 0; i < n; i++) {
+                const error = actual[i] - predicted[i];
+                sumSquaredError += error * error;
+            }
+            
+            return sumSquaredError / n;
+        }
+        
+        function calculateMAPE(actual, predicted) {
+            let sumPercentageError = 0;
+            let count = 0;
+            const n = Math.min(actual.length, predicted.length);
+            
+            for (let i = 0; i < n; i++) {
+                if (actual[i] !== 0) {
+                    const percentageError = Math.abs((actual[i] - predicted[i]) / actual[i]);
+                    sumPercentageError += percentageError;
+                    count++;
+                }
+            }
+            
+            return (sumPercentageError / count) * 100;
+        }
+        
+        function showLoading(message) {
+            loading.style.display = 'block';
+            loading.querySelector('p').textContent = message || 'Procesando...';
+        }
+        
+        function hideLoading() {
+            loading.style.display = 'none';
+        }
+        
+        function updateStatus(message, isError = false) {
+            status.textContent = message;
+            status.style.backgroundColor = isError ? 'rgba(231, 76, 60, 0.2)' : 'rgba(46, 204, 113, 0.2)';
+            status.style.color = isError ? '#c0392b' : '#27ae60';
+        }
+    </script>
+</body>
+</html>
